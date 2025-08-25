@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecteur PDF Adapté TDAH</title>
+    <style>
+        :root {
+            --arriere-plan: #f0f4f8;
+            --texte: #2d3748;
+            --primaire: #4a5568;
+            --accent: #6b46c1;
+            --surlignage: #fffbdd;
+            --carte-fond: #ffffff;
+            --bordure-arrondie: 12px;
+            --ombre: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        [data-theme="sepia"] {
+            --arriere-plan: #f5e8d3;
+            --texte: #5c4b37;
+            --carte-fond: #f0dfc8;
+            --primaire: #8b7b67;
+            --accent: #a67c52;
+            --surlignage: #f0d8a8;
+        }
+
+        [data-theme="sombre"] {
+            --arriere-plan: #2d3748;
+            --texte: #e2e8f0;
+            --carte-fond: #4a5568;
+            --primaire: #cbd5e0;
+            --accent: #9f7aea;
+            --surlignage: #744210;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--arriere-plan);
+            color: var(--texte);
+            line-height: 1.6;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .conteneur-application {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--primaire);
+            color: white;
+            border-radius: var(--bordure-arrondie);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icone-logo {
+            font-size: 24px;
+        }
+
+        .contenu-principal {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .panneau-controle {
+            background: var(--carte-fond);
+            padding: 20px;
+            border-radius: var(--bordure-arrondie);
+            box-shadow: var(--ombre);
+            height: fit-content;
+        }
+
+        .section-panneau {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .section-panneau h3 {
+            margin-bottom: 15px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icone-panneau {
+            font-size: 18px;
+        }
+
+        .groupe-option {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: var(--carte-fond);
+            color: var(--texte);
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .conteneur-bascule {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 50px;
+            padding: 4px;
+            margin-bottom: 15px;
+        }
+
+        .option-bascule {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-bascule.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .vue-lecture {
+            background: var(--carte-fond);
+            padding: 30px;
+            border-radius: var(--bordure-arrondie);
+            box-shadow: var(--ombre);
+            min-height: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .contenu-lecture {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .contenu-lecture p {
+            margin-bottom: 1.2em;
+        }
+
+        .police-opendyslexic {
+            font-family: 'Comic Sans MS', cursive; /* Remplacement car OpenDyslexic nécessite import */
+        }
+
+        .police-comic {
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .police-arial {
+            font-family: Arial, sans-serif;
+        }
+
+        .espacement-large {
+            letter-spacing: 0.05em;
+            word-spacing: 0.1em;
+            line-height: 1.8;
+        }
+
+        .espacement-tres-large {
+            letter-spacing: 0.1em;
+            word-spacing: 0.2em;
+            line-height: 2.2;
+        }
+
+        .texte-grand {
+            font-size: 1.2em;
+        }
+
+        .texte-tres-grand {
+            font-size: 1.4em;
+        }
+
+        .mode-concentration {
+            background-color: rgba(0,0,0,0.1);
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .surligne {
+            background-color: var(--surlignage);
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        .section-import {
+            text-align: center;
+            padding: 30px;
+            border: 2px dashed #cbd5e0;
+            border-radius: var(--bordure-arrondie);
+            margin-bottom: 20px;
+            background: var(--carte-fond);
+        }
+
+        .icone-import {
+            font-size: 48px;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .cache {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            .contenu-principal {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+
+        /* Animation de concentration */
+        @keyframes pulsation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .pulsation {
+            animation: pulsation 2s infinite;
+        }
+    </style>
+</head>
+<body data-theme="clair">
+    <div class="conteneur-application">
+        <header>
+            <div class="logo">
+                <span class="icone-logo">📖</span>
+                <h1>Lecteur PDF Adapté TDAH</h1>
+            </div>
+            <button id="bouton-reinitialiser">
+                <span>↺</span> Réinitialiser
+            </button>
+        </header>
+
+        <div class="section-import" id="section-import">
+            <div class="icone-import">📄</div>
+            <h2>Importer un PDF</h2>
+            <p>Glissez-déposez votre fichier PDF ici ou cliquez sur le bouton ci-dessous</p>
+            <input type="file" id="fichier-pdf" accept=".pdf" class="cache">
+            <button id="bouton-importer" style="margin-top: 15px;">
+                <span>📂</span> Choisir un fichier PDF
+            </button>
+        </div>
+
+        <div class="contenu-principal cache" id="contenu-principal">
+            <div class="panneau-controle">
+                <div class="section-panneau">
+                    <h3><span class="icone-panneau">✏️</span> Apparence</h3>
+                    <div class="groupe-option">
+                        <label>Police</label>
+                        <select id="selection-police">
+                            <option value="opendyslexic">OpenDyslexic (simulé)</option>
+                            <option value="comic">Comic Sans</option>
+                            <option value="arial" selected>Arial</option>
+                        </select>
+                    </div>
+                    <div class="groupe-option">
+                        <label>Espacement</label>
+                        <select id="selection-espacement">
+                            <option value="normal">Normal</option>
+                            <option value="large">Large</option>
+                            <option value="tres-large">Très large</option>
+                        </select>
+                    </div>
+                    <div class="groupe-option">
+                        <label>Taille du texte</label>
+                        <select id="selection-taille">
+                            <option value="normal">Normal</option>
+                            <option value="grand">Grand</option>
+                            <option value="tres-grand">Très grand</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-panneau">
+                    <h3><span class="icone-panneau">🎨</span> Affichage</h3>
+                    <div class="groupe-option">
+                        <label>Thème</label>
+                        <div class="conteneur-bascule">
+                            <div class="option-bascule active" data-theme="clair">Clair</div>
+                            <div class="option-bascule" data-theme="sepia">Sépia</div>
+                            <div class="option-bascule" data-theme="sombre">Sombre</div>
+                        </div>
+                    </div>
+                    <div class="groupe-option">
+                        <label>Largeur de ligne</label>
+                        <select id="selection-largeur">
+                            <option value="normal">Normal</option>
+                            <option value="moyenne">Moyenne</option>
+                            <option value="etroite">Étroite</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-panneau">
+                    <h3><span class="icone-panneau">🔧</span> Outils</h3>
+                    <div class="groupe-option">
+                        <button id="lecture-vocale">
+                            <span>🔊</span> Lecture vocale
+                        </button>
+                    </div>
+                    <div class="groupe-option">
+                        <button id="mode-concentration">
+                            <span>🔍</span> Mode concentration
+                        </button>
+                    </div>
+                    <div class="groupe-option">
+                        <button id="mode-surligneur">
+                            <span>🖌️</span> Mode surligneur
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vue-lecture" id="vue-lecture">
+                <div class="contenu-lecture" id="contenu-lecture">
+                    <p>Le contenu de votre PDF apparaîtra ici après l'import.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let texteActuel = "";
+        let modeSurligneur = false;
+        let modeConcentration = false;
+        let enCoursLecture = false;
+        
+        // Éléments DOM
+        const fichierPdfInput = document.getElementById('fichier-pdf');
+        const boutonImporter = document.getElementById('bouton-importer');
+        const boutonReinitialiser = document.getElementById('bouton-reinitialiser');
+        const selectionPolice = document.getElementById('selection-police');
+        const selectionEspacement = document.getElementById('selection-espacement');
+        const selectionTaille = document.getElementById('selection-taille');
+        const optionsTheme = document.querySelectorAll('.option-bascule');
+        const selectionLargeur = document.getElementById('selection-largeur');
+        const lectureVocaleBtn = document.getElementById('lecture-vocale');
+        const modeConcentrationBtn = document.getElementById('mode-concentration');
+        const modeSurligneurBtn = document.getElementById('mode-surligneur');
+        const vueLecture = document.getElementById('vue-lecture');
+        const contenuLecture = document.getElementById('contenu-lecture');
+        const sectionImport = document.getElementById('section-import');
+        const contenuPrincipal = document.getElementById('contenu-principal');
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Écouteurs d'événements
+            boutonImporter.addEventListener('click', () => fichierPdfInput.click());
+            fichierPdfInput.addEventListener('change', gestionnerImportPdf);
+            boutonReinitialiser.addEventListener('click', reinitialiserApplication);
+            
+            // Options de personnalisation
+            selectionPolice.addEventListener('change', mettreAJourVueLecture);
+            selectionEspacement.addEventListener('change', mettreAJourVueLecture);
+            selectionTaille.addEventListener('change', mettreAJourVueLecture);
+            selectionLargeur.addEventListener('change', mettreAJourVueLecture);
+            
+            // Options de thème
+            optionsTheme.forEach(option => {
+                option.addEventListener('click', function() {
+                    optionsTheme.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    document.body.setAttribute('data-theme', this.getAttribute('data-theme'));
+                });
+            });
+            
+            // Fonctionnalités spéciales
+            lectureVocaleBtn.addEventListener('click', basculerLectureVocale);
+            modeConcentrationBtn.addEventListener('click', basculerModeConcentration);
+            modeSurligneurBtn.addEventListener('click', basculerModeSurligneur);
+            
+            // Écouteur pour le surlignage
+            contenuLecture.addEventListener('click', gererSurlignageTexte);
+            
+            // Glisser-déposer
+            configurerGlisserDeposer();
+        });
+        
+        // Configuration du glisser-déposer
+        function configurerGlisserDeposer() {
+            const zoneDepot = sectionImport;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(nomEvenement => {
+                zoneDepot.addEventListener(nomEvenement, empecherComportementParDefaut, false);
+            });
+            
+            function empecherComportementParDefaut(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(nomEvenement => {
+                zoneDepot.addEventListener(nomEvenement, mettreEnEvidence, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(nomEvenement => {
+                zoneDepot.addEventListener(nomEvenement, enleverMiseEnEvidence, false);
+            });
+            
+            function mettreEnEvidence() {
+                zoneDepot.style.borderColor = '#6b46c1';
+                zoneDepot.style.backgroundColor = 'rgba(107, 70, 193, 0.1)';
+            }
+            
+            function enleverMiseEnEvidence() {
+                zoneDepot.style.borderColor = '#cbd5e0';
+                zoneDepot.style.backgroundColor = '';
+            }
+            
+            zoneDepot.addEventListener('drop', gererDepot, false);
+            
+            function gererDepot(e) {
+                const dt = e.dataTransfer;
+                const fichiers = dt.files;
+                
+                if (fichiers.length && fichiers[0].type === 'application/pdf') {
+                    fichierPdfInput.files = fichiers;
+                    gestionnerImportPdf();
+                } else {
+                    alert('Veuillez déposer un fichier PDF valide.');
+                }
+            }
+        }
+        
+        // Gestion du PDF
+        function gestionnerImportPdf() {
+            if (!fichierPdfInput.files.length) {
+                alert('Veuillez sélectionner un fichier PDF');
+                return;
+            }
+            
+            const fichier = fichierPdfInput.files[0];
+            const lecteur = new FileReader();
+            
+            lecteur.onload = function(evenement) {
+                // Simulation de l'extraction du texte d'un PDF
+                // En production, vous utiliseriez pdf.js ici
+                
+                texteActuel = `
+                    <h2>Exemple de contenu PDF</h2>
+                    <p>Ceci est un exemple de texte qui serait extrait d'un document PDF. Pour une personne avec TDAH, la lecture peut être difficile en raison des distractions et des difficultés à maintenir l'attention.</p>
+                    <p>Cette application est conçue pour faciliter la lecture en offrant des options de personnalisation qui aident à se concentrer sur le contenu.</p>
+                    <p>Les paragraphes sont courts et espacés, la police est choisie pour être facile à lire, et les fonctionnalités comme le surlignage et la lecture vocale aident à maintenir l'engagement avec le texte.</p>
+                    <h3>Caractéristiques de l'application</h3>
+                    <p>L'application propose plusieurs options d'accessibilité :</p>
+                    <ul>
+                        <li>Choix de polices adaptées (OpenDyslexic, Comic Sans, Arial)</li>
+                        <li>Espacement variable entre les lettres, mots et lignes</li>
+                        <li>Différents thèmes colorés pour réduire la fatigue oculaire</li>
+                        <li>Fonction de lecture vocale intégrée</li>
+                        <li>Mode concentration pour isoler des parties du texte</li>
+                        <li>Outil de surlignage pour marquer les passages importants</li>
+                    </ul>
+                    <p>Ces outils aident à maintenir l'attention et à améliorer la compréhension lors de la lecture de documents longs ou complexes.</p>
+                `;
+                
+                contenuLecture.innerHTML = texteActuel;
+                mettreAJourVueLecture();
+                
+                // Afficher la zone de lecture
+                sectionImport.classList.add('cache');
+                contenuPrincipal.classList.remove('cache');
+            };
+            
+            lecteur.readAsArrayBuffer(fichier);
+        }
+        
+        // Mise à jour de l'apparence
+        function mettreAJourVueLecture() {
+            // Réinitialiser les classes
+            contenuLecture.className = 'contenu-lecture';
+            
+            // Appliquer la police
+            contenuLecture.classList.add(`police-${selectionPolice.value}`);
+            
+            // Appliquer l'espacement
+            if (selectionEspacement.value !== 'normal') {
+                contenuLecture.classList.add(`espacement-${selectionEspacement.value}`);
+            }
+            
+            // Appliquer la taille
+            if (selectionTaille.value !== 'normal') {
+                contenuLecture.classList.add(`texte-${selectionTaille.value}`);
+            }
+            
+            // Appliquer la largeur
+            if (selectionLargeur.value !== 'normal') {
+                contenuLecture.style.maxWidth = selectionLargeur.value === 'etroite' ? '500px' : '800px';
+            } else {
+                contenuLecture.style.maxWidth = '700px';
+            }
+        }
+        
+        // Fonctionnalités spéciales
+        function basculerLectureVocale() {
+            if ('speechSynthesis' in window) {
+                if (enCoursLecture) {
+                    speechSynthesis.cancel();
+                    enCoursLecture = false;
+                    lectureVocaleBtn.innerHTML = '<span>🔊</span> Lecture vocale';
+                } else {
+                    const enonce = new SpeechSynthesisUtterance();
+                    enonce.text = contenuLecture.textContent;
+                    enonce.lang = 'fr-FR';
+                    enonce.rate = 0.9;
+                    
+                    speechSynthesis.speak(enonce);
+                    enCoursLecture = true;
+                    lectureVocaleBtn.innerHTML = '<span>⏹️</span> Arrêter la lecture';
+                    
+                    enonce.onend = function() {
+                        enCoursLecture = false;
+                        lectureVocaleBtn.innerHTML = '<span>🔊</span> Lecture vocale';
+                    };
+                }
+            } else {
+                alert('La synthèse vocale n\'est pas supportée par votre navigateur');
+            }
+        }
+        
+        function basculerModeConcentration() {
+            modeConcentration = !modeConcentration;
+            contenuLecture.classList.toggle('mode-concentration');
+            modeConcentrationBtn.innerHTML = modeConcentration ? 
+                '<span>🔍</span> Désactiver concentration' : 
+                '<span>🔍</span> Mode concentration';
+            
+            if (modeConcentration) {
+                contenuLecture.classList.add('pulsation');
+            } else {
+                contenuLecture.classList.remove('pulsation');
+            }
+        }
+        
+        function basculerModeSurligneur() {
+            modeSurligneur = !modeSurligneur;
+            modeSurligneurBtn.innerHTML = modeSurligneur ? 
+                '<span>🖌️</span> Désactiver surligneur' : 
+                '<span>🖌️</span> Mode surligneur';
+            
+            if (modeSurligneur) {
+                vueLecture.style.cursor = "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"yellow\" d=\"M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 5.5V7H9V5.5L3 7V9L10 11V13H9V15H15V13H14V11L21 9Z\"/></svg>') 0 24, auto";
+            } else {
+                vueLecture.style.cursor = "auto";
+            }
+        }
+        
+        function gererSurlignageTexte(e) {
+            if (modeSurligneur && e.target.tagName === 'P') {
+                e.target.classList.toggle('surligne');
+            }
+        }
+        
+        function reinitialiserApplication() {
+            // Réinitialiser l'application
+            sectionImport.classList.remove('cache');
+            contenuPrincipal.classList.add('cache');
+            fichierPdfInput.value = '';
+            contenuLecture.innerHTML = '<p>Le contenu de votre PDF apparaîtra ici après l\'import.</p>';
+            
+            // Réinitialiser les options
+            selectionPolice.value = 'arial';
+            selectionEspacement.value = 'normal';
+            selectionTaille.value = 'normal';
+            selectionLargeur.value = 'normal';
+            
+            // Réinitialiser les thèmes
+            optionsTheme.forEach(opt => opt.classList.remove('active'));
+            document.querySelector('[data-theme="clair"]').classList.add('active');
+            document.body.setAttribute('data-theme', 'clair');
+            
+            // Réinitialiser les modes
+            modeSurligneur = false;
+            modeConcentration = false;
+            enCoursLecture = false;
+            contenuLecture.className = 'contenu-lecture';
+            vueLecture.style.cursor = "auto";
+            
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+            }
+        }
+    </script>
+</body>
+</html>
